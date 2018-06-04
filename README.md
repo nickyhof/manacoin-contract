@@ -1,7 +1,12 @@
 # manacoin-solidity
 A Decentralized Trading Platform Based on Smart Contracts
 # Setup
-## Install package dependencies
+## Install plugins
+```
+cd plugins/contracts-configuration
+npm install
+```
+## Install package dependencies (from root directory)
 ```
 npm install
 ```

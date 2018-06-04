@@ -61,5 +61,6 @@ typings/
 .next
 
 # embark
-.embark/
+chains.json
 dist/
+.embark/

@@ -9,12 +9,6 @@
       "$WEB3",
       "http://localhost:8545"
     ],
-    "gas": "auto",
-    "contracts": {
-      "ManaCoin": {
-        "fromIndex": 0,
-        "args": []
-      }
-    }
+    "gas": "auto"
   }
 }

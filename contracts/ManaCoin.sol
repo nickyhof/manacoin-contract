@@ -28,7 +28,7 @@ contract ManaCoin is StandardToken {
     function createTrade(uint _tradeId, address _to, uint _value) external {
         require(super.balanceOf(msg.sender) >= _value);
 
-        super.transferFrom(msg.sender, collectionAddress, _value);
+        super.transfer(collectionAddress, _value);
 
         trades[_tradeId] = Trade(msg.sender, _to, _value, TradeStatus.Pending);
         
