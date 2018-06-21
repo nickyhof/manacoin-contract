@@ -1,11 +1,11 @@
-describe("ManaCoin", function() {
+describe("ManaCoinToken", function() {
   this.timeout(0);
   
   before(function(done) {
     this.timeout(0);
     
     var contractsConfig = {
-      "ManaCoin": {
+      "ManaCoinToken": {
         args: []
       }
     };
@@ -13,7 +13,7 @@ describe("ManaCoin", function() {
   });
 
   it("should have initial total supply zero", async function() {
-    let result = await ManaCoin.methods.totalSupply().call();
+    let result = await ManaCoinToken.methods.totalSupply().call();
     assert.equal(result, 0);
   });
 

@@ -1,6 +1,9 @@
-# manacoin-solidity
+# manacoin-solidity [![Build Status](https://travis-ci.org/manacoinio/manacoin-solidity.svg?branch=master)](https://travis-ci.org/manacoinio/manacoin-solidity)
 A Decentralized Trading Platform Based on Smart Contracts
 # Setup
+## Install tools
+- ganache: https://truffleframework.com/ganache
+- ipfs: https://dist.ipfs.io/#go-ipfs
 ## Install plugins
 ```
 cd plugins/contracts-configuration
@@ -27,7 +30,7 @@ embark simulator
 ```
 ## Compile and run all Contracts and Dapps
 ```
-embark run
+embark run --nodashboard
 ```
 ## Run tests
 ```

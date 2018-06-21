@@ -2,12 +2,12 @@
   "default": {
     "deployment": {
       "host": "localhost",
-      "port": 8545,
+      "port": 7545,
       "type": "rpc"
     },
     "dappConnection": [
       "$WEB3",
-      "http://localhost:8545"
+      "http://localhost:7545"
     ],
     "gas": "auto"
   }
