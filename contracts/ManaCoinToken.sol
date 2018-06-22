@@ -4,88 +4,89 @@ import "./ERC20/ERC20Token.sol";
 import "./fulfilment/FulfilmentProcess.sol";
 
 contract ManaCoinToken is ERC20Token {
-    string public name = "ManaCoin";
-    string public symbol = "MANA";
-    uint8 public decimals = 18;
 
-    event OrderCreatedEvent(uint256 indexed _orderId, address indexed _fromAddress, address indexed _toAddress, uint256 _value);
-    event OrderCancelledEvent(uint256 indexed _orderId);
-    event OrderCompletedEvent(uint256 indexed _orderId);
-    event OrderRefundedEvent(uint256 indexed _orderId);
+  string public name = "ManaCoin";
+  string public symbol = "MANA";
+  uint8 public decimals = 18;
 
-    enum OrderStatus {
-        PENDING,
-        COMPLETED,
-        CANCELLED,
-        REFUNDED
-    }
+  event OrderCreatedEvent(uint256 indexed _orderId, address indexed _fromAddress, address indexed _toAddress, uint256 _value);
+  event OrderCancelledEvent(uint256 indexed _orderId);
+  event OrderCompletedEvent(uint256 indexed _orderId);
+  event OrderRefundedEvent(uint256 indexed _orderId);
 
-    struct Order {
-        address fromAddress;
-        address toAddress;
-        uint256 value;
-        uint256 fulfilmentProcessId;
-        FulfilmentProcess fulfilmentProcess;
-        OrderStatus status;
-    }
+  enum OrderStatus {
+    PENDING,
+    COMPLETED,
+    CANCELLED,
+    REFUNDED
+  }
 
-    mapping(uint256 => Order) public orders;
+  struct Order {
+    address fromAddress;
+    address toAddress;
+    uint256 value;
+    uint256 fulfilmentProcessId;
+    FulfilmentProcess fulfilmentProcess;
+    OrderStatus status;
+  }
 
-    uint256 orderCounter = 0;
+  mapping(uint256 => Order) public orders;
 
-    function createOrder(address _to, uint256 _value, FulfilmentProcess _fulfilmentProcess) public {
-        require(super.balanceOf(msg.sender) >= _value);
+  uint256 orderCounter = 0;
 
-        uint256 _orderId = orderCounter++;
+  function createOrder(address _to, uint256 _value, FulfilmentProcess _fulfilmentProcess) public {
+    require(super.balanceOf(msg.sender) >= _value);
 
-        super.increasePending(msg.sender, _value);
+    uint256 _orderId = orderCounter++;
 
-        uint256 _fulfilmentProcessId = _fulfilmentProcess.startProcess(msg.sender, _to);
+    super.increasePending(msg.sender, _value);
 
-        orders[_orderId] = Order(msg.sender, _to, _value, _fulfilmentProcessId, _fulfilmentProcess, OrderStatus.PENDING);
+    uint256 _fulfilmentProcessId = _fulfilmentProcess.startProcess(msg.sender, _to);
 
-        emit OrderCreatedEvent(_orderId, msg.sender, _to, _value);
-    }
+    orders[_orderId] = Order(msg.sender, _to, _value, _fulfilmentProcessId, _fulfilmentProcess, OrderStatus.PENDING);
 
-    function cancelOrder(uint256 _orderId) public {
-        Order storage order = orders[_orderId];
+    emit OrderCreatedEvent(_orderId, msg.sender, _to, _value);
+  }
 
-        require(order.status == OrderStatus.PENDING);
-        require(order.fulfilmentProcess.isCancellable(order.fulfilmentProcessId));
-        
-        super.decreasePending(order.fromAddress, order.value);
+  function cancelOrder(uint256 _orderId) public {
+    Order storage order = orders[_orderId];
 
-        order.fulfilmentProcess.completeProcess(order.fulfilmentProcessId);
-        order.status = OrderStatus.CANCELLED;
+    require(order.status == OrderStatus.PENDING);
+    require(order.fulfilmentProcess.isCancellable(order.fulfilmentProcessId));
+    
+    super.decreasePending(order.fromAddress, order.value);
 
-        emit OrderCancelledEvent(_orderId);
-    }
+    order.fulfilmentProcess.completeProcess(order.fulfilmentProcessId);
+    order.status = OrderStatus.CANCELLED;
 
-    function completeOrder(uint256 _orderId) public {
-        Order storage order = orders[_orderId];
+    emit OrderCancelledEvent(_orderId);
+  }
 
-        require(order.status == OrderStatus.PENDING);
-        require(order.fulfilmentProcess.isCancellable(order.fulfilmentProcessId));
+  function completeOrder(uint256 _orderId) public {
+    Order storage order = orders[_orderId];
 
-        super.decreasePending(order.fromAddress, order.value);
-        super.internalTransferFrom(order.fromAddress, order.toAddress, order.value);
+    require(order.status == OrderStatus.PENDING);
+    require(order.fulfilmentProcess.isCancellable(order.fulfilmentProcessId));
 
-        order.fulfilmentProcess.cancelProcess(order.fulfilmentProcessId);
-        order.status = OrderStatus.COMPLETED;
+    super.decreasePending(order.fromAddress, order.value);
+    super.internalTransferFrom(order.fromAddress, order.toAddress, order.value);
 
-        emit OrderCompletedEvent(_orderId);
-    }
+    order.fulfilmentProcess.cancelProcess(order.fulfilmentProcessId);
+    order.status = OrderStatus.COMPLETED;
 
-    function refundOrder(uint256 _orderId) public {
-        Order storage order = orders[_orderId];
+    emit OrderCompletedEvent(_orderId);
+  }
 
-        require(order.toAddress == msg.sender);
-        require(order.status == OrderStatus.COMPLETED);
+  function refundOrder(uint256 _orderId) public {
+    Order storage order = orders[_orderId];
 
-        super.internalTransferFrom(order.toAddress, order.fromAddress, order.value);
+    require(order.toAddress == msg.sender);
+    require(order.status == OrderStatus.COMPLETED);
 
-        order.status = OrderStatus.REFUNDED;
+    super.internalTransferFrom(order.toAddress, order.fromAddress, order.value);
 
-        emit OrderRefundedEvent(_orderId);
-    }
+    order.status = OrderStatus.REFUNDED;
+
+    emit OrderRefundedEvent(_orderId);
+  }
 }

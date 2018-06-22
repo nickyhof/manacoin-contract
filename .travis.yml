@@ -1,5 +1,14 @@
+dist: trusty
+sudo: required
 language: node_js
 node_js:
-    - "8"
+  - "8"
+cache:
+  directories:
+    - node_modules
+before_script:
+  - truffle version
 script:
-    - npm run test
+  - ganache-cli -p 7545 > /dev/null &
+  - npm run lint:sol
+  - npm test

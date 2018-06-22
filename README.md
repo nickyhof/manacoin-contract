@@ -1,38 +1,34 @@
 # manacoin-solidity [![Build Status](https://travis-ci.org/manacoinio/manacoin-solidity.svg?branch=master)](https://travis-ci.org/manacoinio/manacoin-solidity)
 A Decentralized Trading Platform Based on Smart Contracts
 # Setup
-## Install tools
-- ganache: https://truffleframework.com/ganache
-- ipfs: https://dist.ipfs.io/#go-ipfs
-## Install plugins
+## Install ganache
+https://truffleframework.com/ganache or install the CLI
 ```
-cd plugins/contracts-configuration
+npm install -g ganache-cli
+```
+## Globally install truffle
+Used for development
+```
+npm install -g truffle
+```
+See https://truffleframework.com/ for more info
+## Install package dependencies
+```
 npm install
 ```
-## Install package dependencies (from root directory)
-```
-npm install
-```
-## Globally install embark
-Used for blockchain and contract management
-```
-npm install -g embark
-```
-See https://embark.status.im/ for more info
 # Development
-## Start a local blockchain
+## Run ganache using CLI
 ```
-embark blockchain
+ganache-cli -p 7545
 ```
-## Start a blockchain simulator
+## Compile Contracts
 ```
-embark simulator
+truffle compile
 ```
-## Compile and run all Contracts and Dapps
+## Deploy Contracts
 ```
-embark run --nodashboard
+truffle migrate
 ```
-## Run tests
+## Run Tests
 ```
-embark test
-```
+truffle test
