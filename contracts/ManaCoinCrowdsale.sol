@@ -1,6 +1,6 @@
 pragma solidity ^0.4.23;
 
-import "./ManaCoin.sol";
+import "./ManaCoinToken.sol";
 import "../node_modules/zeppelin-solidity/contracts/crowdsale/validation/TimedCrowdsale.sol";
 
 contract ManaCoinCrowdsale is TimedCrowdsale {
@@ -10,7 +10,7 @@ contract ManaCoinCrowdsale is TimedCrowdsale {
         uint256 _closingTime,
         uint256 _rate,
         address _wallet,
-        ManaCoin _token
+        ManaCoinToken _token
     )
     public
     Crowdsale(_rate, _wallet, _token)
