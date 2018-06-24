@@ -1,7 +1,7 @@
 pragma solidity ^0.4.23;
 
-import "./ERC20/ERC20Token.sol";
-import "./fulfilment/FulfilmentProcess.sol";
+import "./lib/ERC20Token.sol";
+import "./lib/Fulfilment.sol";
 
 contract ManaCoinToken is ERC20Token {
 
@@ -9,7 +9,7 @@ contract ManaCoinToken is ERC20Token {
   string public symbol = "MANA";
   uint8 public decimals = 18;
 
-  event OrderCreatedEvent(uint256 indexed _orderId, address indexed _fromAddress, address indexed _toAddress, uint256 _value);
+  event OrderCreatedEvent(uint256 indexed _orderId, address indexed _buyerAddress, address indexed _sellerAddress, uint256 _amount);
   event OrderCancelledEvent(uint256 indexed _orderId);
   event OrderCompletedEvent(uint256 indexed _orderId);
   event OrderRefundedEvent(uint256 indexed _orderId);
@@ -22,41 +22,66 @@ contract ManaCoinToken is ERC20Token {
   }
 
   struct Order {
-    address fromAddress;
-    address toAddress;
-    uint256 value;
-    uint256 fulfilmentProcessId;
-    FulfilmentProcess fulfilmentProcess;
+    address buyerAddress;
+    address sellerAddress;
+    uint256 amount;
+    uint256 fulfilmentId;
+    Fulfilment fulfilment;
     OrderStatus status;
   }
 
-  mapping(uint256 => Order) public orders;
+  mapping(uint256 => Order) orders;
+  mapping(address => uint256[]) buyerOrders;
+  mapping(address => uint256[]) sellerOrders;
 
   uint256 orderCounter = 0;
 
-  function createOrder(address _to, uint256 _value, FulfilmentProcess _fulfilmentProcess) public {
-    require(super.balanceOf(msg.sender) >= _value);
+  function getBuyerOrderIds(address _buyerAddress) public view returns (uint256[]) {
+    return buyerOrders[_buyerAddress];
+  }
+
+  function getSellerOrderIds(address _sellerAddress) public view returns (uint256[]) {
+    return sellerOrders[_sellerAddress];
+  }
+
+  function getOrder(uint256 _orderId) public view returns (address, address, uint256, uint256, address, OrderStatus) {
+    Order storage order = orders[_orderId];
+
+    return (order.buyerAddress, order.sellerAddress, order.amount, order.fulfilmentId, order.fulfilment, order.status);
+  }
+
+  function createOrder(address _to, uint256 _amount, Fulfilment _fulfilment) public returns (uint256) {
+    require(balanceOf(msg.sender) >= _amount);
 
     uint256 _orderId = orderCounter++;
 
-    super.increasePending(msg.sender, _value);
+    increasePending(msg.sender, _amount);
 
-    uint256 _fulfilmentProcessId = _fulfilmentProcess.startProcess(msg.sender, _to);
+    uint256 _fulfilmentId = _fulfilment.startProcess(msg.sender, _to);
 
-    orders[_orderId] = Order(msg.sender, _to, _value, _fulfilmentProcessId, _fulfilmentProcess, OrderStatus.PENDING);
+    orders[_orderId] = Order(msg.sender, _to, _amount, _fulfilmentId, _fulfilment, OrderStatus.PENDING);
+    
+    uint256[] storage _buyerOrderIds = buyerOrders[msg.sender];
+    uint _buyerOrderIdsLength = _buyerOrderIds.length++;
+    _buyerOrderIds[_buyerOrderIdsLength] = _orderId;
 
-    emit OrderCreatedEvent(_orderId, msg.sender, _to, _value);
+    uint256[] storage _sellerOrderIds = sellerOrders[_to];
+    uint _sellerOrderIdsLength = _sellerOrderIds.length++;
+    _sellerOrderIds[_sellerOrderIdsLength] = _orderId;
+
+    emit OrderCreatedEvent(_orderId, msg.sender, _to, _amount);
+
+    return _orderId;
   }
 
   function cancelOrder(uint256 _orderId) public {
     Order storage order = orders[_orderId];
 
     require(order.status == OrderStatus.PENDING);
-    require(order.fulfilmentProcess.isCancellable(order.fulfilmentProcessId));
+    require(order.fulfilment.isCancellable(order.fulfilmentId));
     
-    super.decreasePending(order.fromAddress, order.value);
+    decreasePending(order.buyerAddress, order.amount);
 
-    order.fulfilmentProcess.completeProcess(order.fulfilmentProcessId);
     order.status = OrderStatus.CANCELLED;
 
     emit OrderCancelledEvent(_orderId);
@@ -66,12 +91,11 @@ contract ManaCoinToken is ERC20Token {
     Order storage order = orders[_orderId];
 
     require(order.status == OrderStatus.PENDING);
-    require(order.fulfilmentProcess.isCancellable(order.fulfilmentProcessId));
+    require(order.fulfilment.isFulfiled(order.fulfilmentId));
 
-    super.decreasePending(order.fromAddress, order.value);
-    super.internalTransferFrom(order.fromAddress, order.toAddress, order.value);
+    decreasePending(order.buyerAddress, order.amount);
+    internalTransferFrom(order.buyerAddress, order.sellerAddress, order.amount);
 
-    order.fulfilmentProcess.cancelProcess(order.fulfilmentProcessId);
     order.status = OrderStatus.COMPLETED;
 
     emit OrderCompletedEvent(_orderId);
@@ -80,10 +104,10 @@ contract ManaCoinToken is ERC20Token {
   function refundOrder(uint256 _orderId) public {
     Order storage order = orders[_orderId];
 
-    require(order.toAddress == msg.sender);
+    require(order.sellerAddress == msg.sender);
     require(order.status == OrderStatus.COMPLETED);
 
-    super.internalTransferFrom(order.toAddress, order.fromAddress, order.value);
+    internalTransferFrom(order.sellerAddress, order.buyerAddress, order.amount);
 
     order.status = OrderStatus.REFUNDED;
 

@@ -3,9 +3,10 @@
   "plugins": ["security"],
   "rules": {
     "quotes": ["error", "double"],
+    "blank-lines": "off",
     "no-empty-blocks": "off",
-    "indentation": ["error", 2],
-    "max-len": ["warning", 79],
+    "indentation": ["warning", 2],
+    "max-len": ["off"],
     "no-constant": ["error"],
     "security/enforce-explicit-visibility": ["error"],
     "security/no-block-members": ["warning"],
