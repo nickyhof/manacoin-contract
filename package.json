@@ -1,20 +1,21 @@
 {
-  "name": "manacoin-contract",
+  "name": "manacoin-contracts",
   "version": "1.0.0",
   "description": "A Decentralized Trading Platform Based on Smart Contracts",
   "license": "MIT",
-  "scripts": {
-    "test": "truffle test",
-    "lint:sol": "solium -d .",
-    "lint:sol:fix": "solium -d . --fix"
-  },
+  "private": true,
   "repository": {
-    "url": "https://github.com/manacoinio/manacoin-contract"
+    "url": "https://github.com/manacoinio/manacoin-contracts"
   },
   "dependencies": {
     "ganache-cli": "^6.1.3",
     "solium": "^1.1.7",
     "truffle": "^4.1.12",
     "zeppelin-solidity": "^1.9.0"
+  },
+  "scripts": {
+    "test": "truffle test",
+    "lint:sol": "solium -d .",
+    "lint:sol:fix": "solium -d . --fix"
   }
 }

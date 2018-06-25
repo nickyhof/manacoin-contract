@@ -1,4 +1,4 @@
-# manacoin-solidity [![Build Status](https://travis-ci.org/manacoinio/manacoin-solidity.svg?branch=master)](https://travis-ci.org/manacoinio/manacoin-solidity)
+# manacoin-contracts [![Build Status](https://travis-ci.org/manacoinio/manacoin-contracts.svg?branch=develop)](https://travis-ci.org/manacoinio/manacoin-contracts)
 A Decentralized Trading Platform Based on Smart Contracts
 # Setup
 ## Install ganache
