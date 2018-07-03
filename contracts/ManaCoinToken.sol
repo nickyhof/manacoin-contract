@@ -51,11 +51,18 @@ contract ManaCoinToken is ERC20Token {
   }
 
   function createOrder(address _to, uint256 _amount, Fulfilment _fulfilment) public returns (uint256) {
-    require(balanceOf(msg.sender) >= _amount);
+    address _fulfilmentOwner = _fulfilment.getFulfilmentOwner();
+    uint256 _fulfilmentFee = _fulfilment.getFulfilmentFee();
+    uint256 _totalAmount = _amount + _fulfilmentFee;
+    require(balanceOf(msg.sender) >= _totalAmount);
 
     uint256 _orderId = orderCounter++;
 
     increasePending(msg.sender, _amount);
+
+    if (_fulfilmentFee > 0) {
+      transfer(_fulfilmentOwner, _fulfilmentFee);
+    }
 
     uint256 _fulfilmentId = _fulfilment.startProcess(msg.sender, _to);
 

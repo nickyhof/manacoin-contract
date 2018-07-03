@@ -1,13 +1,14 @@
 pragma solidity ^0.4.23;
 
 import "./lib/Fulfilment.sol";
+import "../node_modules/zeppelin-solidity/contracts/ownership/Ownable.sol";
 
 /**
  * Standard Fulfilment Process which allows:
  * - fromAddress or toAddress to cancel the order
  * - toAddress to complete the order
  */
-contract ManaCoinStandardFulfilment is Fulfilment {
+contract ManaCoinStandardFulfilment is Fulfilment, Ownable {
 
   enum FulfilmentStatus {
     STARTED,
@@ -24,6 +25,19 @@ contract ManaCoinStandardFulfilment is Fulfilment {
   mapping(uint256 => Fulfilment) public processes;
 
   uint256 processCounter = 0;
+  uint256 fulfilmentFee = 0;
+
+  function getFulfilmentOwner() public returns (address) {
+    return owner;
+  }
+
+  function getFulfilmentFee() public returns (uint256) {
+    return fulfilmentFee;
+  }
+
+  function setFulfilmentFee(uint256 _fulfilmentFee) onlyOwner public {
+    fulfilmentFee = _fulfilmentFee;
+  }
 
   function startProcess(address _fromAddress, address _toAddress) public returns (uint256) {
     uint256 _processId = processCounter++;

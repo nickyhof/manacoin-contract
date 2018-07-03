@@ -6,6 +6,10 @@ contract Fulfilment {
   event FulfilmentCancelledEvent(uint256 indexed _processId);
   event FulfilmentCompletedEvent(uint256 indexed _processId);
 
+  function getFulfilmentOwner() public returns (address);
+
+  function getFulfilmentFee() public returns (uint256);
+
   function startProcess(address _fromAddress, address _toAddress) public returns (uint256);
 
   function cancelProcess(uint256 _processId) public;
