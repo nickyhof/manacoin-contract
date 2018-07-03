@@ -6,7 +6,8 @@ module.exports = function(deployer, network, accounts) {
   if (network == 'development') {
     const openingTime = web3.eth.getBlock('latest').timestamp + 30; // 30 seconds in the future
     const closingTime = openingTime + 86400 * 7; // 7 days
-    const rate = new web3.BigNumber(1000);
+    const rate = new web3.BigNumber(1000); // token units a buyer gets per wei
+    const goal = new web3.BigNumber(10000000); // minimum amount of funds to be raised in weis
     const wallet = accounts[0];
   
     return deployer
@@ -22,6 +23,7 @@ module.exports = function(deployer, network, accounts) {
           openingTime,
           closingTime,
           rate,
+          goal,
           wallet,
           ManaCoinToken.address
         );
