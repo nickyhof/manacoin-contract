@@ -8,6 +8,7 @@ module.exports = function(deployer, network, accounts) {
     const closingTime = openingTime + 86400 * 7; // 7 days
     const rate = new web3.BigNumber(1000); // token units a buyer gets per wei
     const goal = new web3.BigNumber(10000000); // minimum amount of funds to be raised in weis
+    const founderTokens = new web3.BigNumber(1000000); // amount of tokens set aside for founders
     const wallet = accounts[0];
   
     return deployer
@@ -27,6 +28,9 @@ module.exports = function(deployer, network, accounts) {
           wallet,
           ManaCoinToken.address
         );
+      })
+      .then(() => {
+        ManaCoinToken.deployed().then(token => token.mint(wallet, founderTokens));
       });
   } else {
     console.error("Unknown network:", network);

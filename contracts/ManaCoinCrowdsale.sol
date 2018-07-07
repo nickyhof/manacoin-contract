@@ -1,13 +1,13 @@
 pragma solidity ^0.4.23;
 
 import "./ManaCoinToken.sol";
+import "../node_modules/zeppelin-solidity/contracts/crowdsale/emission/MintedCrowdsale.sol";
 import "../node_modules/zeppelin-solidity/contracts/crowdsale/validation/TimedCrowdsale.sol";
 import "../node_modules/zeppelin-solidity/contracts/crowdsale/distribution/RefundableCrowdsale.sol";
 
-contract ManaCoinCrowdsale is TimedCrowdsale, RefundableCrowdsale {
+contract ManaCoinCrowdsale is TimedCrowdsale, RefundableCrowdsale, MintedCrowdsale {
 
-  function ManaCoinCrowdsale
-  (
+  constructor(
     uint256 _openingTime,
     uint256 _closingTime,
     uint256 _rate,
