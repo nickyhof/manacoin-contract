@@ -13,12 +13,14 @@ contract ManaCoinToken is ERC20Token {
   event OrderCancelledEvent(uint256 indexed _orderId);
   event OrderCompletedEvent(uint256 indexed _orderId);
   event OrderRefundedEvent(uint256 indexed _orderId);
+  event OrderFraudulentEvent(uint256 indexed _orderId);
 
   enum OrderStatus {
     PENDING,
     COMPLETED,
     CANCELLED,
-    REFUNDED
+    REFUNDED,
+    FRAUDULENT
   }
 
   struct Order {
@@ -81,15 +83,21 @@ contract ManaCoinToken is ERC20Token {
     return _orderId;
   }
 
-  function cancelOrder(uint256 _orderId) public {
+  function cancelOrder(uint256 _orderId, bool _fraudulent) public {
     Order storage order = orders[_orderId];
 
     require(order.status == OrderStatus.PENDING);
     require(order.fulfilment.isCancellable(order.fulfilmentId));
+
+    order.fulfilment.cancelProcess(order.fulfilmentId);
     
     decreasePending(order.buyerAddress, order.amount);
 
-    order.status = OrderStatus.CANCELLED;
+    if (_fraudulent) {
+      order.status = OrderStatus.FRAUDULENT;
+    } else {
+      order.status = OrderStatus.CANCELLED;
+    }
 
     emit OrderCancelledEvent(_orderId);
   }
@@ -98,7 +106,7 @@ contract ManaCoinToken is ERC20Token {
     Order storage order = orders[_orderId];
 
     require(order.status == OrderStatus.PENDING);
-    require(order.fulfilment.isFulfiled(order.fulfilmentId));
+    require(order.fulfilment.isFulfilled(order.fulfilmentId));
 
     decreasePending(order.buyerAddress, order.amount);
     internalTransferFrom(order.buyerAddress, order.sellerAddress, order.amount);

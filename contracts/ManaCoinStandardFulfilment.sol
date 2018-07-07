@@ -5,20 +5,24 @@ import "../node_modules/zeppelin-solidity/contracts/ownership/Ownable.sol";
 
 /**
  * Standard Fulfilment Process which allows:
- * - fromAddress or toAddress to cancel the order
- * - toAddress to complete the order
+ * - buyer or seller to cancel the order
+ * - seller to complete the order
  */
 contract ManaCoinStandardFulfilment is Fulfilment, Ownable {
+
+  event FulfilmentStartedEvent(uint256 indexed _processId, address indexed _buyerAddress, address indexed _sellerAddress);
+  event FulfilmentCancelledEvent(uint256 indexed _processId);
+  event FulfilmentCompletedEvent(uint256 indexed _processId);
 
   enum FulfilmentStatus {
     STARTED,
     CANCELLED,
-    COMPLETED
+    FULFILLED
   }
 
   struct Fulfilment {
-    address fromAddress;
-    address toAddress;
+    address buyerAddress;
+    address sellerAddress;
     FulfilmentStatus status;
   }
 
@@ -39,12 +43,12 @@ contract ManaCoinStandardFulfilment is Fulfilment, Ownable {
     fulfilmentFee = _fulfilmentFee;
   }
 
-  function startProcess(address _fromAddress, address _toAddress) public returns (uint256) {
+  function startProcess(address _buyerAddress, address _sellerAddress) public returns (uint256) {
     uint256 _processId = processCounter++;
 
-    processes[_processId] = Fulfilment(_fromAddress, _toAddress, FulfilmentStatus.STARTED);
+    processes[_processId] = Fulfilment(_buyerAddress, _sellerAddress, FulfilmentStatus.STARTED);
 
-    emit FulfilmentStartedEvent(_processId, _fromAddress, _toAddress);
+    emit FulfilmentStartedEvent(_processId, _buyerAddress, _sellerAddress);
 
     return _processId;
   }
@@ -52,7 +56,7 @@ contract ManaCoinStandardFulfilment is Fulfilment, Ownable {
   function cancelProcess(uint256 _processId) public {
     Fulfilment storage process = processes[_processId];
 
-    require(process.fromAddress == msg.sender || process.toAddress == msg.sender);
+    require(process.buyerAddress == tx.origin || process.sellerAddress == tx.origin);
     require(process.status == FulfilmentStatus.STARTED);
 
     process.status = FulfilmentStatus.CANCELLED;
@@ -63,10 +67,10 @@ contract ManaCoinStandardFulfilment is Fulfilment, Ownable {
   function completeProcess(uint256 _processId) public {
     Fulfilment storage process = processes[_processId];
 
-    require(process.toAddress == msg.sender);
-    require(process.status == FulfilmentStatus.STARTED);
+    require(process.sellerAddress == msg.sender);
+    require(process.status == FulfilmentStatus.STARTED || process.status == FulfilmentStatus.CANCELLED);
 
-    process.status = FulfilmentStatus.COMPLETED;
+    process.status = FulfilmentStatus.FULFILLED;
 
     emit FulfilmentCompletedEvent(_processId);
   }
@@ -77,9 +81,9 @@ contract ManaCoinStandardFulfilment is Fulfilment, Ownable {
     return (process.status == FulfilmentStatus.STARTED);
   }
 
-  function isFulfiled(uint256 _processId) public view returns (bool) {
+  function isFulfilled(uint256 _processId) public view returns (bool) {
     Fulfilment storage process = processes[_processId];
 
-    return (process.status == FulfilmentStatus.COMPLETED);
+    return (process.status == FulfilmentStatus.FULFILLED);
   }
 }

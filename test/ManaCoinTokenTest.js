@@ -64,7 +64,7 @@ contract('ManaCoinToken', function(accounts) {
     it("test cancel order from buyer account", async () => {
       let orderId = await token.createOrder.call(account2, 500, fulfilment.address, {from: account1});
       await token.createOrder.sendTransaction(account2, 500, fulfilment.address, {from: account1});
-      await token.cancelOrder.sendTransaction(orderId, {from: account1});
+      await token.cancelOrder.sendTransaction(orderId, false, {from: account1});
 
       let account1Balance = await token.balanceOf(account1);
       let account1PrendingBalance = await token.pendingBalanceOf(account1);
@@ -78,7 +78,7 @@ contract('ManaCoinToken', function(accounts) {
     it("test cancel order from seller account", async () => {
       let orderId = await token.createOrder.call(account2, 500, fulfilment.address, {from: account1});
       await token.createOrder.sendTransaction(account2, 500, fulfilment.address, {from: account1});
-      await token.cancelOrder.sendTransaction(orderId, {from: account2});
+      await token.cancelOrder.sendTransaction(orderId, false, {from: account2});
 
       let account1Balance = await token.balanceOf(account1);
       let account1PrendingBalance = await token.pendingBalanceOf(account1);
